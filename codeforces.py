@@ -162,6 +162,7 @@ def main():
     submissions = get_submissions()
 
     print(f"Found {len(submissions)} submissions.")
+    print("Submission fields:", sorted(submissions[0].keys()))
 
     accepted = [
         submission

@@ -1,3 +1,4 @@
+import base64
 import hashlib
 import json
 import os
@@ -28,7 +29,9 @@ def load_state():
         return {"processed_submission_ids": []}
 
     try:
-        return json.loads(STATE_FILE.read_text(encoding="utf-8"))
+        return json.loads(
+            STATE_FILE.read_text(encoding="utf-8")
+        )
     except (json.JSONDecodeError, OSError):
         return {"processed_submission_ids": []}
 
@@ -146,8 +149,34 @@ def get_submissions():
     return data["result"]
 
 
+def decode_source(submission):
+    """
+    Codeforces API returns source code in sourceBase64.
+    Decode it into normal UTF-8 source code.
+    """
+
+    source_base64 = submission.get("sourceBase64")
+
+    if not source_base64:
+        return None
+
+    try:
+        return base64.b64decode(
+            source_base64
+        ).decode("utf-8")
+
+    except (ValueError, UnicodeDecodeError) as error:
+        print(
+            f"ERROR: Could not decode source "
+            f"for submission {submission['id']}: {error}"
+        )
+        return None
+
+
 def main():
-    print(f"Checking Codeforces submissions for: {HANDLE}")
+    print(
+        f"Checking Codeforces submissions for: {HANDLE}"
+    )
 
     state = load_state()
 
@@ -161,8 +190,15 @@ def main():
 
     submissions = get_submissions()
 
-    print(f"Found {len(submissions)} submissions.")
-    print("Submission fields:", sorted(submissions[0].keys()))
+    print(
+        f"Found {len(submissions)} submissions."
+    )
+
+    if submissions:
+        print(
+            "Submission fields:",
+            sorted(submissions[0].keys())
+        )
 
     accepted = [
         submission
@@ -175,29 +211,33 @@ def main():
         f"Found {len(accepted)} accepted submissions."
     )
 
+    # Process oldest accepted submissions first.
     accepted.reverse()
 
     added = 0
 
     for submission in accepted:
 
-        submission_id = str(submission["id"])
+        submission_id = str(
+            submission["id"]
+        )
 
         if submission_id in processed:
             continue
 
         contest_id = submission["contestId"]
+
         problem_index = submission["problem"]["index"]
+
         problem_name = submission["problem"]["name"]
+
         language = submission.get(
             "programmingLanguage",
             "Unknown"
         )
 
-        source = submission.get("source")
-
-        if not source:
-            source = submission.get("sourceCode")
+        # Decode Codeforces Base64 source.
+        source = decode_source(submission)
 
         if not source:
             print(
@@ -220,12 +260,14 @@ def main():
 
         # One solution per problem.
         if folder.exists() and any(folder.iterdir()):
+
             print(
                 f"Skipping existing problem: "
                 f"{folder_name}"
             )
 
             processed.add(submission_id)
+
             continue
 
         print(
@@ -239,6 +281,7 @@ def main():
             exist_ok=True
         )
 
+        # Save actual source code.
         output_file.write_text(
             source,
             encoding="utf-8"
@@ -258,7 +301,9 @@ def main():
             ),
         }
 
-        metadata_file = folder / "metadata.json"
+        metadata_file = (
+            folder / "metadata.json"
+        )
 
         metadata_file.write_text(
             json.dumps(
@@ -272,7 +317,7 @@ def main():
 
         added += 1
 
-        # Codeforces API recommends limiting requests.
+        # Avoid hitting Codeforces too quickly.
         time.sleep(2)
 
     state["processed_submission_ids"] = sorted(

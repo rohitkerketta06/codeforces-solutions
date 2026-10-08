@@ -1,0 +1,13 @@
+{
+  "submission_id": 393767415,
+  "contest_id": 50,
+  "problem_index": "A",
+  "problem_name": "Domino piling",
+  "language": "Java 21",
+  "verdict": "OK",
+  "rating": 800,
+  "tags": [
+    "greedy",
+    "math"
+  ]
+}

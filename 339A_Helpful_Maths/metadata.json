@@ -1,0 +1,15 @@
+{
+  "submission_id": 393791885,
+  "contest_id": 339,
+  "problem_index": "A",
+  "problem_name": "Helpful Maths",
+  "language": "Java 21",
+  "verdict": "OK",
+  "rating": 800,
+  "tags": [
+    "greedy",
+    "implementation",
+    "sortings",
+    "strings"
+  ]
+}

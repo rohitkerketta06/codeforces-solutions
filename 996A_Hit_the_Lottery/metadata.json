@@ -1,0 +1,13 @@
+{
+  "submission_id": 396099427,
+  "contest_id": 996,
+  "problem_index": "A",
+  "problem_name": "Hit the Lottery",
+  "language": "Java 21",
+  "verdict": "OK",
+  "rating": 800,
+  "tags": [
+    "dp",
+    "greedy"
+  ]
+}
